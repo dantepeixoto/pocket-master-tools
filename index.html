@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pocket Master Tools</title>
+  <style>
+    :root {
+      --bg: #0f0f0f;
+      --surface: #1a1a1a;
+      --surface2: #242424;
+      --border: #333;
+      --accent: #e05a00;
+      --accent2: #4caf50;
+      --text: #e8e8e8;
+      --text-dim: #888;
+      --red: #e05a00;
+      --green: #4caf50;
+      --radius: 10px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 24px 32px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    header .header-text h1 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: #fff;
+    }
+
+    header .header-text p {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      margin-top: 2px;
+    }
+
+    /* ── Lang toggle ── */
+    .lang-toggle {
+      display: flex;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .lang-btn {
+      padding: 4px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: transparent;
+      color: var(--text-dim);
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+      letter-spacing: 0.04em;
+    }
+
+    .lang-btn:hover { border-color: #555; color: var(--text); }
+    .lang-btn.active { background: var(--surface2); border-color: var(--accent); color: var(--text); }
+
+    main {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 32px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    /* ── Tool card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-header .badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 99px;
+      background: var(--surface2);
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .card-header .badge.ready { background: #1a2e1a; color: var(--green); }
+    .card-header .badge.wip   { background: #2e2a1a; color: #f0b429; }
+
+    .card-header h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      flex: 1;
+    }
+
+    .card-body {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* ── Drop zone ── */
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      background: var(--surface2);
+    }
+
+    .drop-zone:hover,
+    .drop-zone.drag-over {
+      border-color: var(--accent);
+      background: #1e1510;
+    }
+
+    .drop-zone .icon { font-size: 2rem; display: block; margin-bottom: 8px; }
+    .drop-zone .label { font-size: 0.9rem; color: var(--text-dim); }
+    .drop-zone .label strong { color: var(--text); }
+    .drop-zone input[type=file] { display: none; }
+
+    .drop-zone.has-file {
+      border-color: var(--accent);
+      background: #1e1510;
+    }
+
+    .drop-zone .file-info {
+      display: none;
+      font-size: 0.85rem;
+      color: var(--text);
+      margin-top: 8px;
+    }
+
+    .drop-zone.has-file .file-info { display: block; }
+    .drop-zone.has-file .hint { display: none; }
+
+    /* ── Type badge ── */
+    .type-badge {
+      display: none;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 99px;
+      text-align: center;
+      width: fit-content;
+    }
+    .type-badge.amp-head { display: inline-block; background: #2e1a1a; color: #f87171; }
+    .type-badge.full-rig { display: inline-block; background: #1a2e1a; color: var(--green); }
+    .type-badge.unknown  { display: inline-block; background: var(--surface2); color: var(--text-dim); }
+
+    /* ── Controls ── */
+    .control-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .control-row label {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      white-space: nowrap;
+    }
+
+    input[type=range] {
+      flex: 1;
+      min-width: 120px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .value-display {
+      font-size: 0.9rem;
+      font-weight: 700;
+      min-width: 52px;
+      text-align: right;
+      color: var(--text);
+    }
+
+    /* ── IR selector ── */
+    .ir-selector {
+      display: flex;
+      gap: 10px;
+    }
+
+    .ir-btn {
+      flex: 1;
+      padding: 12px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface2);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: border-color 0.15s, background 0.15s;
+      text-align: center;
+    }
+
+    .ir-btn:hover { border-color: #555; }
+    .ir-btn.selected-red  { border-color: var(--red);   background: #1e1010; color: #f87171; }
+    .ir-btn.selected-green { border-color: var(--green); background: #0e1e0e; color: var(--green); }
+
+    .ir-btn .ir-name { display: block; font-size: 0.75rem; font-weight: 400; color: var(--text-dim); margin-top: 2px; }
+
+    /* ── Buttons ── */
+    .btn {
+      padding: 10px 22px;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+
+    .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .btn:not(:disabled):active { transform: scale(0.98); }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:not(:disabled):hover { background: #f06a10; }
+
+    .btn-secondary {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:not(:disabled):hover { background: #2e2e2e; }
+
+    /* ── Progress ── */
+    .progress-wrap {
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .progress-wrap.visible { display: flex; }
+
+    .progress-bar-track {
+      height: 6px;
+      background: var(--surface2);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 99px;
+      width: 0%;
+      transition: width 0.2s;
+    }
+
+    .progress-label {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+    }
+
+    /* ── Status messages ── */
+    .status {
+      display: none;
+      font-size: 0.85rem;
+      padding: 10px 14px;
+      border-radius: 8px;
+      line-height: 1.4;
+    }
+
+    .status.visible { display: block; }
+    .status.error   { background: #2e1010; color: #f87171; border: 1px solid #5e2020; }
+    .status.success { background: #0e2010; color: #6ee7b7; border: 1px solid #1e4030; }
+    .status.info    { background: #1a1a2e; color: #93c5fd; border: 1px solid #2a3a5e; }
+
+    /* ── Instructions ── */
+    .instructions {
+      display: none;
+      background: var(--surface2);
+      border-radius: var(--radius);
+      padding: 16px;
+      font-size: 0.85rem;
+      line-height: 1.7;
+    }
+
+    .instructions.visible { display: block; }
+
+    .instructions h3 {
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .instructions ol {
+      padding-left: 18px;
+      color: var(--text-dim);
+    }
+
+    .instructions ol li { margin-bottom: 4px; }
+    .instructions a { color: var(--accent2); text-decoration: none; }
+    .instructions a:hover { text-decoration: underline; }
+
+    /* ── Download buttons ── */
+    .download-row {
+      display: none;
+      gap: 10px;
+    }
+
+    .download-row.visible { display: flex; }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 32px 24px;
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      border-top: 1px solid var(--border);
+    }
+
+    footer a { color: var(--text-dim); text-decoration: none; }
+    footer a:hover { color: var(--text); }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-text">
+    <h1>Pocket Master Tools</h1>
+    <p data-i18n="header.subtitle">Ferramentas para arquivos .nam no Sonicake Pocket Master</p>
+  </div>
+  <div class="lang-toggle">
+    <button class="lang-btn active" id="btn-pt" onclick="setLang('pt')">PT</button>
+    <button class="lang-btn"        id="btn-en" onclick="setLang('en')">EN</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SOBRE                                        -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="card">
+    <div class="card-header">
+      <h2 data-i18n="about.title">Sobre o Pocket Master Tools</h2>
+    </div>
+    <div class="card-body" style="gap:12px">
+      <p style="font-size:0.9rem; line-height:1.75; color:var(--text-dim)" data-i18n="about.p1">
+        Esse site nasceu de uma necessidade simples: usar melhor a minha Pocket Master. Montei esse cantinho para resolver dois problemas comuns — capturas NAM com volume baixo demais comparado aos amps nativos da pedaleira, e modelos de amp sem cabinet embutido que não funcionam direito em hardware com processamento limitado.
+      </p>
+      <p style="font-size:0.9rem; line-height:1.75; color:var(--text-dim)" data-i18n="about.p2">
+        Se funciona pra Pocket Master, funciona pra qualquer pedaleira ou dispositivo que carregue arquivos .nam.
+      </p>
+      <p style="font-size:0.9rem; line-height:1.75; color:var(--text-dim)" data-i18n="about.p3">
+        Esse projeto é completamente gratuito e assim vai continuar. Sem anúncios, sem cadastro, sem monetização. Por favor, não use o site ou o que ele gera para fins comerciais — o ecossistema NAM é construído por músicos compartilhando conhecimento de graça, e o espírito aqui é o mesmo.
+      </p>
+      <p style="font-size:0.95rem; color:var(--text)" data-i18n="about.closing">Boas capturas. 🎸</p>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- TOOL 1 — Ajuste de Volume                   -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="card">
+    <div class="card-header">
+      <h2 data-i18n="vol.title">Ajuste de Volume</h2>
+      <span class="badge ready" data-i18n="badge.ready">Pronto</span>
+    </div>
+
+    <div class="card-body">
+      <p style="font-size:0.85rem; color:var(--text-dim)" data-i18n-html="vol.desc">
+        Arraste um arquivo <strong>.nam</strong> e escolha o ganho em dB.
+        O volume é ajustado escalando os pesos da camada de saída — sem
+        reprocessamento de áudio.
+      </p>
+
+      <!-- Drop zone -->
+      <div class="drop-zone" id="vol-drop" tabindex="0" role="button">
+        <span class="icon">🎛️</span>
+        <div class="hint">
+          <div class="label"><strong data-i18n="drop.main">Arraste o .nam aqui</strong></div>
+          <div class="label" style="font-size:0.8rem; margin-top:4px" data-i18n="drop.sub">ou clique para selecionar</div>
+        </div>
+        <div class="file-info" id="vol-file-info"></div>
+        <input type="file" id="vol-file-input" accept=".nam" />
+      </div>
+
+      <span class="type-badge" id="vol-type-badge"></span>
+
+      <!-- Slider de ganho -->
+      <div class="control-row">
+        <label for="vol-slider" data-i18n="vol.gain">Ganho</label>
+        <input type="range" id="vol-slider" min="1" max="9" step="0.5" value="6" />
+        <span class="value-display" id="vol-value">+6.0 dB</span>
+      </div>
+
+      <!-- Botão e status -->
+      <div class="control-row">
+        <button class="btn btn-primary" id="vol-btn" disabled data-i18n="vol.btn">
+          Baixar .nam ajustado
+        </button>
+      </div>
+
+      <div class="status" id="vol-status"></div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- TOOL 2 — Gerador de Full Rig                -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="card">
+    <div class="card-header">
+      <h2 data-i18n="rig.title">Gerador de Full Rig</h2>
+      <span class="badge wip">Beta</span>
+    </div>
+
+    <div class="card-body">
+      <p style="font-size:0.85rem; color:var(--text-dim)" data-i18n-html="rig.desc">
+        Transforma um modelo <strong>Amp Head</strong> em <strong>Full Rig</strong>
+        adicionando um cabinet. Processa o sweep oficial do Tone3000 pelo head + IR
+        e gera o wet signal pronto para subir no
+        <a href="https://www.tone3000.com" target="_blank" rel="noopener"
+           style="color:var(--accent2)">Tone3000</a>.
+      </p>
+
+      <!-- Drop zone -->
+      <div class="drop-zone" id="rig-drop" tabindex="0" role="button">
+        <span class="icon">🎸</span>
+        <div class="hint">
+          <div class="label"><strong data-i18n="rig.drop.main">Arraste o .nam Amp Head aqui</strong></div>
+          <div class="label" style="font-size:0.8rem; margin-top:4px" data-i18n="drop.sub">ou clique para selecionar</div>
+        </div>
+        <div class="file-info" id="rig-file-info"></div>
+        <input type="file" id="rig-file-input" accept=".nam" />
+      </div>
+
+      <span class="type-badge" id="rig-type-badge"></span>
+
+      <!-- Seletor de IR -->
+      <div>
+        <div style="font-size:0.85rem; color:var(--text-dim); margin-bottom:8px" data-i18n="rig.cabinet">Escolha o cabinet:</div>
+        <div class="ir-selector">
+          <button class="ir-btn" id="ir-heavy" data-ir="heavy">
+            🔴 <span data-i18n="ir.heavy.name">Drive / High Gain</span>
+            <span class="ir-name">Mesa 4×12 · V30 · Rock/Metal</span>
+          </button>
+          <button class="ir-btn" id="ir-clean" data-ir="clean">
+            🟢 <span data-i18n="ir.clean.name">Clean</span>
+            <span class="ir-name">Fender Deluxe Reverb · Clean/Blues</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Botão gerar -->
+      <div class="control-row">
+        <button class="btn btn-primary" id="rig-btn" disabled data-i18n="rig.btn">
+          Gerar áudios de treino
+        </button>
+      </div>
+
+      <!-- Progresso -->
+      <div class="progress-wrap" id="rig-progress">
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" id="rig-progress-fill"></div>
+        </div>
+        <div class="progress-label" id="rig-progress-label"></div>
+      </div>
+
+      <div class="status" id="rig-status"></div>
+
+      <!-- Botão de download -->
+      <div class="download-row" id="rig-downloads">
+        <button class="btn btn-secondary" id="dl-output">⬇ wet_signal.wav</button>
+      </div>
+
+      <!-- Instruções pós-geração -->
+      <div class="instructions" id="rig-instructions">
+        <h3 data-i18n="instr.title">Próximos passos no Tone3000</h3>
+        <ol id="instr-list"></ol>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p data-i18n-html="footer.credits">
+    Feito para a comunidade Sonicake Pocket Master ·
+    <a href="https://github.com/tone-3000/neural-amp-modeler-wasm" target="_blank" rel="noopener">NAM WASM</a> por Tone3000 ·
+    <a href="https://github.com/sdatkinson/NeuralAmpModelerCore" target="_blank" rel="noopener">NAM Core</a> por Steve Atkinson
+  </p>
+  <p style="margin-top:8px" data-i18n-html="footer.author">
+    Criado com carinho por <a href="https://www.linkedin.com/in/dantepeixoto/" target="_blank" rel="noopener">Dante Peixoto</a>
+  </p>
+</footer>
+
+<!-- WASM do mrgeneko/nam_volume_knob — deve carregar antes do módulo ES -->
+<script>
+  // Notifica o módulo ES quando o WASM estiver pronto
+  var Module = {
+    noInitialRun: true,
+    onRuntimeInitialized: function() {
+      window.NamVolumeModule = Module;
+      document.dispatchEvent(new Event('wasm-ready'));
+    }
+  };
+</script>
+<script src="./src/nam-volume-knob-web.js"></script>
+
+<script type="module">
+  import { adjustVolume, readNamFile, downloadNam, detectModelType } from './src/volume.js';
+  import { processWithOfficialNam } from './src/nam-official-runtime.js';
+  import { loadIR, applyIR } from './src/ir-convolver.js';
+  import { downloadWav } from './src/wav-encoder.js';
+
+  // ─────────────────────────────────────────────
+  // i18n
+  // ─────────────────────────────────────────────
+
+  const TRANSLATIONS = {
+    pt: {
+      'header.subtitle': 'Ferramentas para arquivos .nam no Sonicake Pocket Master',
+
+      'about.title':   'Sobre o Pocket Master Tools',
+      'about.p1':      'Esse site nasceu de uma necessidade simples: usar melhor a minha Pocket Master. Montei esse cantinho para resolver dois problemas comuns — capturas NAM com volume baixo demais comparado aos amps nativos da pedaleira, e modelos de amp sem cabinet embutido que não funcionam direito em hardware com processamento limitado.',
+      'about.p2':      'Se funciona pra Pocket Master, funciona pra qualquer pedaleira ou dispositivo que carregue arquivos .nam.',
+      'about.p3':      'Esse projeto é completamente gratuito e assim vai continuar. Sem anúncios, sem cadastro, sem monetização. Por favor, não use o site ou o que ele gera para fins comerciais — o ecossistema NAM é construído por músicos compartilhando conhecimento de graça, e o espírito aqui é o mesmo.',
+      'about.closing': 'Boas capturas. 🎸',
+
+      'badge.ready': 'Pronto',
+
+      'vol.title': 'Ajuste de Volume',
+      'vol.desc':  'Arraste um arquivo <strong>.nam</strong> e escolha o ganho em dB. O volume é ajustado escalando os pesos da camada de saída — sem reprocessamento de áudio.',
+      'vol.gain':  'Ganho',
+      'vol.btn':   'Baixar .nam ajustado',
+
+      'drop.main':     'Arraste o .nam aqui',
+      'drop.sub':      'ou clique para selecionar',
+      'rig.drop.main': 'Arraste o .nam Amp Head aqui',
+
+      'rig.title':   'Gerador de Full Rig',
+      'rig.desc':    'Transforma um modelo <strong>Amp Head</strong> em <strong>Full Rig</strong> adicionando um cabinet. Processa o sweep oficial do Tone3000 pelo head + IR e gera o wet signal pronto para subir no <a href="https://www.tone3000.com" target="_blank" rel="noopener" style="color:var(--accent2)">Tone3000</a>.',
+      'rig.cabinet': 'Escolha o cabinet:',
+      'rig.btn':     'Gerar wet signal',
+
+      'ir.heavy.name': 'Drive / High Gain',
+      'ir.clean.name': 'Clean',
+
+      'instr.title': 'Próximos passos no Tone3000',
+      'instr.steps': [
+        'Acesse <a href="https://www.tone3000.com" target="_blank" rel="noopener">tone3000.com</a> e faça login',
+        'Vá em <strong>Capture</strong> → aba <strong>Sweep Signal</strong>',
+        'Suba o <code>wet_signal.wav</code> que você acabou de baixar',
+        'Treine e baixe o novo modelo <strong>Full Rig</strong>',
+        'Importe na Pocket Master via SonicLink ou Sonicake Manager',
+      ],
+
+      'type.amp_head': '⚡ Amp Head detectado',
+      'type.full_rig': '✅ Full Rig',
+      'type.unknown':  '❓ Tipo desconhecido',
+
+      'status.vol.ok': '✅ Download iniciado!',
+      'status.rig.full_rig': '⚠️ Este modelo já é Full Rig. A ferramenta é pensada para Amp Heads.',
+      'status.rig.ok':       '✅ Wet signal gerado! Suba o arquivo no Tone3000 → Capture → Sweep Signal.',
+      'status.ir.missing':   (url) => `IR não encontrado em ${url}. Coloque os arquivos porrada.wav e clean.wav na pasta src/.`,
+      'status.sweep.missing': 'Sweep do Tone3000 não encontrado (src/T3K-sweep-v3.wav). Verifique se o arquivo está na pasta src/.',
+
+      'progress.sweep':      'Carregando sweep do Tone3000…',
+      'progress.loading':    'Carregando modelo NAM…',
+      'progress.processing': 'Processando sweep pelo modelo (pode levar ~1 min)…',
+      'progress.nam':        (p) => `Processando NAM: ${p}%`,
+      'progress.ir':         'Carregando IR do cabinet…',
+      'progress.applying':   'Aplicando cabinet (IR)…',
+      'progress.done':       'Concluído!',
+
+      'footer.credits': 'Feito para a comunidade Sonicake Pocket Master · <a href="https://github.com/tone-3000/neural-amp-modeler-wasm" target="_blank" rel="noopener">NAM WASM</a> por Tone3000 · <a href="https://github.com/sdatkinson/NeuralAmpModelerCore" target="_blank" rel="noopener">NAM Core</a> por Steve Atkinson · Ajuste de volume baseado no <a href="https://github.com/mrgeneko/nam_volume_knob" target="_blank" rel="noopener">nam_volume_knob</a> por mrgeneko',
+      'footer.author':  'Criado com carinho por <a href="https://www.linkedin.com/in/dantepeixoto/" target="_blank" rel="noopener">Dante Peixoto</a>',
+    },
+
+    en: {
+      'header.subtitle': 'Tools for .nam files on the Sonicake Pocket Master',
+
+      'about.title':   'About Pocket Master Tools',
+      'about.p1':      'This site was born out of a simple need: getting more out of my Pocket Master. I put this together to solve two common problems — NAM captures that are too quiet compared to the pedalboard\'s built-in amps, and amp models without a cabinet that don\'t work well on hardware with limited processing power.',
+      'about.p2':      'If it works on the Pocket Master, it works on any pedalboard or device that loads .nam files.',
+      'about.p3':      'This project is completely free and will stay that way. No ads, no sign-up, no monetization. Please don\'t use the site or what it generates for commercial purposes — the NAM ecosystem is built by musicians sharing knowledge for free, and that\'s the spirit here.',
+      'about.closing': 'Happy capturing. 🎸',
+
+      'badge.ready': 'Ready',
+
+      'vol.title': 'Volume Adjustment',
+      'vol.desc':  'Drop a <strong>.nam</strong> file and choose the gain in dB. Volume is adjusted by scaling the output layer weights — no audio reprocessing needed.',
+      'vol.gain':  'Gain',
+      'vol.btn':   'Download adjusted .nam',
+
+      'drop.main':     'Drop the .nam here',
+      'drop.sub':      'or click to select',
+      'rig.drop.main': 'Drop the Amp Head .nam here',
+
+      'rig.title':   'Full Rig Generator',
+      'rig.desc':    'Converts an <strong>Amp Head</strong> model into a <strong>Full Rig</strong> by adding a cabinet. Runs the Tone3000 sweep through the head + IR and generates the wet signal ready to upload to <a href="https://www.tone3000.com" target="_blank" rel="noopener" style="color:var(--accent2)">Tone3000</a>.',
+      'rig.cabinet': 'Choose the cabinet:',
+      'rig.btn':     'Generate wet signal',
+
+      'ir.heavy.name': 'Drive / High Gain',
+      'ir.clean.name': 'Clean',
+
+      'instr.title': 'Next steps on Tone3000',
+      'instr.steps': [
+        'Go to <a href="https://www.tone3000.com" target="_blank" rel="noopener">tone3000.com</a> and log in',
+        'Go to <strong>Capture</strong> → <strong>Sweep Signal</strong> tab',
+        'Upload the <code>wet_signal.wav</code> you just downloaded',
+        'Train and download the new <strong>Full Rig</strong> model',
+        'Import it into the Pocket Master via SonicLink or Sonicake Manager',
+      ],
+
+      'type.amp_head': '⚡ Amp Head detected',
+      'type.full_rig': '✅ Full Rig',
+      'type.unknown':  '❓ Unknown type',
+
+      'status.vol.ok': '✅ Download started!',
+      'status.rig.full_rig':    '⚠️ This model is already a Full Rig. This tool is meant for Amp Heads.',
+      'status.rig.ok':          '✅ Wet signal generated! Upload the file to Tone3000 → Capture → Sweep Signal.',
+      'status.ir.missing':      (url) => `IR not found at ${url}. Place porrada.wav and clean.wav in the src/ folder.`,
+      'status.sweep.missing':   'Tone3000 sweep not found (src/T3K-sweep-v3.wav). Check that the file is in the src/ folder.',
+
+      'progress.sweep':      'Loading Tone3000 sweep…',
+      'progress.loading':    'Loading NAM model…',
+      'progress.processing': 'Processing sweep through the model (may take ~1 min)…',
+      'progress.nam':        (p) => `Processing NAM: ${p}%`,
+      'progress.ir':         'Loading cabinet IR…',
+      'progress.applying':   'Applying cabinet (IR)…',
+      'progress.done':       'Done!',
+
+      'footer.credits': 'Made for the Sonicake Pocket Master community · <a href="https://github.com/tone-3000/neural-amp-modeler-wasm" target="_blank" rel="noopener">NAM WASM</a> by Tone3000 · <a href="https://github.com/sdatkinson/NeuralAmpModelerCore" target="_blank" rel="noopener">NAM Core</a> by Steve Atkinson · Volume adjustment based on <a href="https://github.com/mrgeneko/nam_volume_knob" target="_blank" rel="noopener">nam_volume_knob</a> by mrgeneko',
+      'footer.author':  'Made with love by <a href="https://www.linkedin.com/in/dantepeixoto/" target="_blank" rel="noopener">Dante Peixoto</a>',
+    },
+  };
+
+  let currentLang = localStorage.getItem('lang') || 'pt';
+
+  function t(key, ...args) {
+    const val = TRANSLATIONS[currentLang][key] ?? TRANSLATIONS['pt'][key];
+    return typeof val === 'function' ? val(...args) : val;
+  }
+
+  window.setLang = function(lang) {
+    currentLang = lang;
+    localStorage.setItem('lang', lang);
+    document.documentElement.lang = lang === 'pt' ? 'pt-BR' : 'en';
+
+    document.getElementById('btn-pt').classList.toggle('active', lang === 'pt');
+    document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+
+    // Atualiza elementos estáticos
+    document.querySelectorAll('[data-i18n]').forEach((el) => {
+      const val = t(el.dataset.i18n);
+      if (val !== undefined) el.textContent = val;
+    });
+    document.querySelectorAll('[data-i18n-html]').forEach((el) => {
+      const val = t(el.dataset.i18nHtml);
+      if (val !== undefined) el.innerHTML = val;
+    });
+
+    // Instruções (lista dinâmica)
+    renderInstructions();
+
+    // Re-aplica type badge se visível
+    if (volTypeBadge.className !== 'type-badge') setTypeBadge(volTypeBadge, volTypeBadge.dataset.type);
+    if (rigTypeBadge.className !== 'type-badge') setTypeBadge(rigTypeBadge, rigTypeBadge.dataset.type);
+  };
+
+  function renderInstructions() {
+    const list = document.getElementById('instr-list');
+    const steps = t('instr.steps');
+    list.innerHTML = steps.map((s) => `<li>${s}</li>`).join('');
+  }
+
+  // ─────────────────────────────────────────────
+  // Utilitários
+  // ─────────────────────────────────────────────
+
+  function showStatus(el, msg, type = 'info') {
+    el.textContent = msg;
+    el.className = `status visible ${type}`;
+  }
+
+  function hideStatus(el) {
+    el.className = 'status';
+  }
+
+  function analyzeAudioBuffer(audioBuffer) {
+    const data = audioBuffer.getChannelData(0);
+    let peak = 0;
+    let rmsAcc = 0;
+    let nanCount = 0;
+
+    for (let i = 0; i < data.length; i++) {
+      const s = data[i];
+      if (!Number.isFinite(s)) {
+        nanCount++;
+        continue;
+      }
+      const a = Math.abs(s);
+      if (a > peak) peak = a;
+      rmsAcc += s * s;
+    }
+
+    const rms = Math.sqrt(rmsAcc / data.length);
+    return { peak, rms, nanCount, length: data.length, sampleRate: audioBuffer.sampleRate };
+  }
+
+  function assertUsableSignal(audioBuffer, stageName) {
+    const stats = analyzeAudioBuffer(audioBuffer);
+    if (stats.nanCount > 0) {
+      throw new Error(`${stageName} inválido: ${stats.nanCount} amostras NaN/Infinity.`);
+    }
+    if (stats.peak < 1e-5) {
+      throw new Error(`${stageName} praticamente silencioso (peak=${stats.peak.toExponential(2)}).`);
+    }
+    return stats;
+  }
+
+  function setupDropZone(dropEl, inputEl, onFile) {
+    dropEl.addEventListener('click', () => inputEl.click());
+    dropEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') inputEl.click();
+    });
+    inputEl.addEventListener('change', () => {
+      if (inputEl.files[0]) onFile(inputEl.files[0]);
+    });
+    dropEl.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropEl.classList.add('drag-over');
+    });
+    dropEl.addEventListener('dragleave', () => dropEl.classList.remove('drag-over'));
+    dropEl.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropEl.classList.remove('drag-over');
+      const file = e.dataTransfer.files[0];
+      if (file && file.name.endsWith('.nam')) onFile(file);
+    });
+  }
+
+  function setTypeBadge(el, type) {
+    el.dataset.type = type;
+    el.className = 'type-badge';
+    if (type === 'amp_head') {
+      el.className += ' amp-head';
+      el.textContent = t('type.amp_head');
+    } else if (type === 'full_rig') {
+      el.className += ' full-rig';
+      el.textContent = t('type.full_rig');
+    } else if (type) {
+      el.className += ' unknown';
+      el.textContent = t('type.unknown');
+    }
+  }
+
+  // ─────────────────────────────────────────────
+  // TOOL 1 — Ajuste de Volume
+  // ─────────────────────────────────────────────
+
+  const volDrop      = document.getElementById('vol-drop');
+  const volInput     = document.getElementById('vol-file-input');
+  const volFileInfo  = document.getElementById('vol-file-info');
+  const volTypeBadge = document.getElementById('vol-type-badge');
+  const volSlider    = document.getElementById('vol-slider');
+  const volValue     = document.getElementById('vol-value');
+  const volBtn       = document.getElementById('vol-btn');
+  const volStatus    = document.getElementById('vol-status');
+
+  let volNamJson = null;
+  let volFilename = '';
+  let wasmReady = false;
+
+  function isVolumeModuleReady() {
+    return !!(window.NamVolumeModule && typeof window.NamVolumeModule.processNam === 'function');
+  }
+
+  function refreshVolumeButtonState() {
+    wasmReady = isVolumeModuleReady();
+    volBtn.disabled = !(wasmReady && volNamJson);
+  }
+
+  volValue.textContent = `+${parseFloat(volSlider.value).toFixed(1)} dB`;
+
+  // Habilita o botão somente quando WASM + arquivo estiverem prontos
+  document.addEventListener('wasm-ready', () => {
+    refreshVolumeButtonState();
+  });
+
+  // Fallback: alguns navegadores podem perder o evento; fazemos polling curto.
+  const volumeWasmPoll = setInterval(() => {
+    refreshVolumeButtonState();
+    if (wasmReady) clearInterval(volumeWasmPoll);
+  }, 250);
+  setTimeout(() => clearInterval(volumeWasmPoll), 15000);
+
+  volSlider.addEventListener('input', () => {
+    volValue.textContent = `+${parseFloat(volSlider.value).toFixed(1)} dB`;
+  });
+
+  setupDropZone(volDrop, volInput, async (file) => {
+    try {
+      volNamJson = await readNamFile(file);
+      volFilename = file.name;
+      volDrop.classList.add('has-file');
+      volFileInfo.textContent = `📄 ${file.name} (${(file.size / 1024).toFixed(0)} KB)`;
+      refreshVolumeButtonState();
+      hideStatus(volStatus);
+      setTypeBadge(volTypeBadge, detectModelType(volNamJson.metadata, file.name));
+    } catch (err) {
+      showStatus(volStatus, err.message, 'error');
+    }
+  });
+
+  volBtn.addEventListener('click', () => {
+    if (!volNamJson) return;
+    try {
+      const gainDb = parseFloat(parseFloat(volSlider.value).toFixed(1));
+      const { result } = adjustVolume(volNamJson, gainDb);
+      downloadNam(result, volFilename, gainDb);
+      showStatus(volStatus, t('status.vol.ok'), 'success');
+    } catch (err) {
+      showStatus(volStatus, err.message, 'error');
+    }
+  });
+
+  // ─────────────────────────────────────────────
+  // TOOL 2 — Gerador de Full Rig
+  // ─────────────────────────────────────────────
+
+  const rigDrop          = document.getElementById('rig-drop');
+  const rigInput         = document.getElementById('rig-file-input');
+  const rigFileInfo      = document.getElementById('rig-file-info');
+  const rigTypeBadge     = document.getElementById('rig-type-badge');
+  const rigBtn           = document.getElementById('rig-btn');
+  const rigStatus        = document.getElementById('rig-status');
+  const rigProgress      = document.getElementById('rig-progress');
+  const rigProgressFill  = document.getElementById('rig-progress-fill');
+  const rigProgressLabel = document.getElementById('rig-progress-label');
+  const rigDownloads     = document.getElementById('rig-downloads');
+  const dlOutput         = document.getElementById('dl-output');
+  const rigInstructions  = document.getElementById('rig-instructions');
+  const irHeavyBtn       = document.getElementById('ir-heavy');
+  const irCleanBtn       = document.getElementById('ir-clean');
+
+  let rigNamJson = null;
+  let selectedIr = null;
+  let generatedOutput = null;
+
+  setupDropZone(rigDrop, rigInput, async (file) => {
+    try {
+      rigNamJson = await readNamFile(file);
+      rigDrop.classList.add('has-file');
+      rigFileInfo.textContent = `📄 ${file.name} (${(file.size / 1024).toFixed(0)} KB)`;
+      hideStatus(rigStatus);
+      const type = detectModelType(rigNamJson.metadata, file.name);
+      setTypeBadge(rigTypeBadge, type);
+      if (type === 'full_rig') showStatus(rigStatus, t('status.rig.full_rig'), 'info');
+      updateRigBtn();
+    } catch (err) {
+      showStatus(rigStatus, err.message, 'error');
+    }
+  });
+
+  [irHeavyBtn, irCleanBtn].forEach((btn) => {
+    btn.addEventListener('click', () => {
+      irHeavyBtn.className = 'ir-btn';
+      irCleanBtn.className = 'ir-btn';
+      selectedIr = btn.dataset.ir;
+      btn.classList.add(selectedIr === 'heavy' ? 'selected-red' : 'selected-green');
+      updateRigBtn();
+    });
+  });
+
+  function updateRigBtn() {
+    rigBtn.disabled = !(rigNamJson && selectedIr);
+  }
+
+  function setProgress(pct, label) {
+    rigProgressFill.style.width = `${Math.round(pct * 100)}%`;
+    rigProgressLabel.textContent = label;
+  }
+
+  rigBtn.addEventListener('click', async () => {
+    if (!rigNamJson || !selectedIr) return;
+
+    rigBtn.disabled = true;
+    rigDownloads.className = 'download-row';
+    rigInstructions.className = 'instructions';
+    hideStatus(rigStatus);
+    rigProgress.classList.add('visible');
+    setProgress(0, t('progress.sweep'));
+
+    try {
+      // Carrega o sweep oficial do Tone3000 da pasta src/
+      let sweepBuffer;
+      try {
+        sweepBuffer = await loadIR('./src/T3K-sweep-v3.wav');
+      } catch {
+        throw new Error(t('status.sweep.missing'));
+      }
+      assertUsableSignal(sweepBuffer, 'Sweep');
+
+      setProgress(0.05, t('progress.loading'));
+      await new Promise((r) => setTimeout(r, 0));
+
+      setProgress(0.1, t('progress.processing'));
+      const namOutput = await processWithOfficialNam(rigNamJson, sweepBuffer, (p) => {
+        setProgress(0.1 + p * 0.7, t('progress.nam', Math.round(p * 100)));
+      });
+      assertUsableSignal(namOutput, 'Saída do NAM');
+
+      setProgress(0.8, t('progress.ir'));
+
+      const irUrl = selectedIr === 'heavy' ? './src/porrada.wav' : './src/clean.wav';
+      let irBuffer;
+      try {
+        irBuffer = await loadIR(irUrl, sweepBuffer.sampleRate);
+      } catch {
+        throw new Error(t('status.ir.missing', irUrl));
+      }
+      assertUsableSignal(irBuffer, 'IR');
+
+      setProgress(0.9, t('progress.applying'));
+      const withCab = await applyIR(namOutput, irBuffer);
+      assertUsableSignal(withCab, 'Wet signal');
+      setProgress(1, t('progress.done'));
+
+      generatedOutput = withCab;
+
+      rigProgress.classList.remove('visible');
+      rigDownloads.className = 'download-row visible';
+      rigInstructions.className = 'instructions visible';
+      renderInstructions();
+      showStatus(rigStatus, t('status.rig.ok'), 'success');
+    } catch (err) {
+      rigProgress.classList.remove('visible');
+      showStatus(rigStatus, err.message, 'error');
+    } finally {
+      rigBtn.disabled = false;
+    }
+  });
+
+  dlOutput.addEventListener('click', () => { if (generatedOutput) downloadWav(generatedOutput, 'wet_signal.wav'); });
+
+  // ─────────────────────────────────────────────
+  // Init
+  // ─────────────────────────────────────────────
+  setLang(currentLang);
+</script>
+
+</body>
+</html>
