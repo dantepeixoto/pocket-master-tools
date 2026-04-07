@@ -92,7 +92,7 @@ export function downloadNam(namJson, originalFilename, gainDb) {
   const baseName = originalFilename.replace(/\.nam$/i, '');
   const newName = `${baseName}_${sign}${gainDb}dB.nam`;
 
-  const blob = new Blob([JSON.stringify(namJson)], { type: 'application/json' });
+  const blob = new Blob([JSON.stringify(namJson)], { type: 'application/octet-stream' });
   const url = URL.createObjectURL(blob);
 
   const a = document.createElement('a');
