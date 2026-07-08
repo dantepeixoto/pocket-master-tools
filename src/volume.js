@@ -38,6 +38,33 @@ export function detectModelType(metadata, filename = '') {
   return 'unknown';
 }
 
+// Chaves que só existem em layers de modelos WaveNet Arquitetura 2 (A2, NAM >= 0.6.0).
+// Confirmado comparando os exemplos oficiais wavenet_a1_standard.nam e wavenet_a2_max.nam
+// do repositório sdatkinson/NeuralAmpModelerCore.
+const A2_LAYER_MARKERS = [
+  'bottleneck', 'gating_mode', 'groups_input', 'groups_input_mixin',
+  'head1x1', 'layer1x1', 'conv_pre_film', 'conv_post_film', 'secondary_activation',
+];
+
+/**
+ * Detecta se um .nam usa a Arquitetura 2 (A2, lançada em 2026).
+ * A Pocket Master e o WASM de ajuste de volume (mrgeneko/nam_volume_knob) só entendem A1 —
+ * processar um A2 corromperia o arquivo, pois o layout de pesos é diferente.
+ *
+ * @param {Object} namJson
+ * @returns {'A1' | 'A2'}
+ */
+export function detectArchitectureGeneration(namJson) {
+  const layers = namJson?.config?.layers;
+  if (namJson?.architecture === 'WaveNet' && Array.isArray(layers)) {
+    const isA2 = layers.some(
+      (layer) => layer && A2_LAYER_MARKERS.some((key) => key in layer)
+    );
+    if (isA2) return 'A2';
+  }
+  return 'A1';
+}
+
 /**
  * Ajusta o volume de um modelo .nam via WASM.
  *

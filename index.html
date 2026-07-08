@@ -405,6 +405,14 @@
         reprocessamento de áudio.
       </p>
 
+      <div class="status visible info" data-i18n-html="vol.a1notice">
+        ⚠️ Esta ferramenta e a Pocket Master rodam apenas a <strong>Arquitetura 1 (A1)</strong> do NAM.
+        Em 2026 o NAM lançou a <strong>Arquitetura 2 (A2)</strong>, com uma estrutura de arquivo
+        totalmente nova — arquivos A2 não são compatíveis com a Pocket Master e não podem ser
+        processados aqui. Se você capturou ou baixou o modelo recentemente, confira se ele é A1
+        antes de usar esta ferramenta.
+      </div>
+
       <!-- Drop zone -->
       <div class="drop-zone" id="vol-drop" tabindex="0" role="button">
         <span class="icon">🎛️</span>
@@ -449,10 +457,9 @@
     <div class="card-body">
       <p style="font-size:0.85rem; color:var(--text-dim)" data-i18n-html="rig.desc">
         Transforma um modelo <strong>Amp Head</strong> em <strong>Full Rig</strong>
-        adicionando um cabinet. Processa o sweep oficial do Tone3000 pelo head + IR
-        e gera o wet signal pronto para subir no
-        <a href="https://www.tone3000.com" target="_blank" rel="noopener"
-           style="color:var(--accent2)">Tone3000</a>.
+        adicionando um cabinet. Processa o sweep oficial pelo head + IR e gera o
+        wet signal pronto para treinar um novo modelo <strong>A1</strong>.
+        <em>O Tone3000 não treina mais Arquitetura 1 — veja abaixo onde treinar.</em>
       </p>
 
       <!-- Drop zone -->
@@ -507,7 +514,7 @@
 
       <!-- Instruções pós-geração -->
       <div class="instructions" id="rig-instructions">
-        <h3 data-i18n="instr.title">Próximos passos no Tone3000</h3>
+        <h3 data-i18n="instr.title">Próximos passos: treine o Full Rig (A1)</h3>
         <ol id="instr-list"></ol>
       </div>
     </div>
@@ -540,7 +547,7 @@
 <script src="./src/nam-volume-knob-web.js"></script>
 
 <script type="module">
-  import { adjustVolume, readNamFile, downloadNam, detectModelType } from './src/volume.js';
+  import { adjustVolume, readNamFile, downloadNam, detectModelType, detectArchitectureGeneration } from './src/volume.js';
   import { processWithOfficialNam } from './src/nam-official-runtime.js';
   import { loadIR, applyIR } from './src/ir-convolver.js';
   import { downloadWav } from './src/wav-encoder.js';
@@ -563,6 +570,7 @@
 
       'vol.title': 'Ajuste de Volume',
       'vol.desc':  'Arraste um arquivo <strong>.nam</strong> e escolha o ganho em dB. O volume é ajustado escalando os pesos da camada de saída — sem reprocessamento de áudio.',
+      'vol.a1notice': '⚠️ Esta ferramenta e a Pocket Master rodam apenas a <strong>Arquitetura 1 (A1)</strong> do NAM. Em 2026 o NAM lançou a <strong>Arquitetura 2 (A2)</strong>, com uma estrutura de arquivo totalmente nova — arquivos A2 não são compatíveis com a Pocket Master e não podem ser processados aqui. Se você capturou ou baixou o modelo recentemente, confira se ele é A1 antes de usar esta ferramenta.',
       'vol.gain':  'Ganho',
       'vol.btn':   'Baixar .nam ajustado',
 
@@ -571,19 +579,21 @@
       'rig.drop.main': 'Arraste o .nam Amp Head aqui',
 
       'rig.title':   'Gerador de Full Rig',
-      'rig.desc':    'Transforma um modelo <strong>Amp Head</strong> em <strong>Full Rig</strong> adicionando um cabinet. Processa o sweep oficial do Tone3000 pelo head + IR e gera o wet signal pronto para subir no <a href="https://www.tone3000.com" target="_blank" rel="noopener" style="color:var(--accent2)">Tone3000</a>.',
+      'rig.desc':    'Transforma um modelo <strong>Amp Head</strong> em <strong>Full Rig</strong> adicionando um cabinet. Processa o sweep oficial pelo head + IR e gera o wet signal pronto para treinar um novo modelo <strong>A1</strong>. <em>O Tone3000 não treina mais Arquitetura 1 — veja abaixo onde treinar.</em>',
       'rig.cabinet': 'Escolha o cabinet:',
       'rig.btn':     'Gerar wet signal',
 
       'ir.heavy.name': 'Drive / High Gain',
       'ir.clean.name': 'Clean',
 
-      'instr.title': 'Próximos passos no Tone3000',
+      'instr.title': 'Próximos passos: treine o Full Rig (A1)',
       'instr.steps': [
-        'Acesse <a href="https://www.tone3000.com" target="_blank" rel="noopener">tone3000.com</a> e faça login',
-        'Vá em <strong>Capture</strong> → aba <strong>Sweep Signal</strong>',
-        'Suba o <code>wet_signal.wav</code> que você acabou de baixar',
-        'Treine e baixe o novo modelo <strong>Full Rig</strong>',
+        '⚠️ O Tone3000 parou de treinar modelos Arquitetura 1 (A1) — hoje ele só gera modelos A2, que a Pocket Master não roda. Por isso o treino do Full Rig precisa ser feito em outro lugar.',
+        'Assista a este tutorial em vídeo, que ensina o treino de A1 pelo Google Colab: <a href="https://www.youtube.com/watch?v=fbxO6XHU8x4" target="_blank" rel="noopener">youtube.com/watch?v=fbxO6XHU8x4</a>',
+        'Baixe também o <code>input.wav</code> (mesmo sinal de sweep usado para gerar seu wet signal): <a href="./src/T3K-sweep-v3.wav" download="input.wav">input.wav</a>',
+        'Abra o notebook <a href="https://colab.research.google.com/github/sdatkinson/NAMTrainerColab/blob/main/notebook.ipynb" target="_blank" rel="noopener">NAMTrainerColab</a> no Google Colab (Runtime → Change runtime type → GPU)',
+        'Envie os dois arquivos: <code>input.wav</code> (baixado acima) e o <code>wet_signal.wav</code> gerado aqui, renomeado para <code>output.wav</code>',
+        'Rode o treinamento e baixe o <code>model.nam</code> resultante (pasta <code>exported_model</code>)',
         'Importe na Pocket Master via SonicLink ou Sonicake Manager',
       ],
 
@@ -592,8 +602,9 @@
       'type.unknown':  '❓ Tipo desconhecido',
 
       'status.vol.ok': '✅ Download iniciado!',
+      'status.vol.a2detected': '⛔ Este arquivo usa a Arquitetura 2 (A2) do NAM. A Pocket Master e esta ferramenta só suportam Arquitetura 1 (A1) — processar este arquivo aqui geraria um .nam corrompido. Use um modelo A1.',
       'status.rig.full_rig': '⚠️ Este modelo já é Full Rig. A ferramenta é pensada para Amp Heads.',
-      'status.rig.ok':       '✅ Wet signal gerado! Suba o arquivo no Tone3000 → Capture → Sweep Signal.',
+      'status.rig.ok':       '✅ Wet signal gerado! Veja os passos de treino abaixo (Google Colab).',
       'status.ir.missing':   (url) => `IR não encontrado em ${url}. Coloque os arquivos porrada.wav e clean.wav na pasta src/.`,
       'status.sweep.missing': 'Sweep do Tone3000 não encontrado (src/T3K-sweep-v3.wav). Verifique se o arquivo está na pasta src/.',
 
@@ -622,6 +633,7 @@
 
       'vol.title': 'Volume Adjustment',
       'vol.desc':  'Drop a <strong>.nam</strong> file and choose the gain in dB. Volume is adjusted by scaling the output layer weights — no audio reprocessing needed.',
+      'vol.a1notice': '⚠️ This tool and the Pocket Master only run NAM <strong>Architecture 1 (A1)</strong>. In 2026 NAM released <strong>Architecture 2 (A2)</strong>, with a completely new file structure — A2 files are not compatible with the Pocket Master and can\'t be processed here. If you captured or downloaded the model recently, check that it\'s A1 before using this tool.',
       'vol.gain':  'Gain',
       'vol.btn':   'Download adjusted .nam',
 
@@ -630,19 +642,21 @@
       'rig.drop.main': 'Drop the Amp Head .nam here',
 
       'rig.title':   'Full Rig Generator',
-      'rig.desc':    'Converts an <strong>Amp Head</strong> model into a <strong>Full Rig</strong> by adding a cabinet. Runs the Tone3000 sweep through the head + IR and generates the wet signal ready to upload to <a href="https://www.tone3000.com" target="_blank" rel="noopener" style="color:var(--accent2)">Tone3000</a>.',
+      'rig.desc':    'Converts an <strong>Amp Head</strong> model into a <strong>Full Rig</strong> by adding a cabinet. Runs the official sweep through the head + IR and generates the wet signal ready to train a new <strong>A1</strong> model. <em>Tone3000 no longer trains Architecture 1 — see below where to train it.</em>',
       'rig.cabinet': 'Choose the cabinet:',
       'rig.btn':     'Generate wet signal',
 
       'ir.heavy.name': 'Drive / High Gain',
       'ir.clean.name': 'Clean',
 
-      'instr.title': 'Next steps on Tone3000',
+      'instr.title': 'Next steps: train the Full Rig (A1)',
       'instr.steps': [
-        'Go to <a href="https://www.tone3000.com" target="_blank" rel="noopener">tone3000.com</a> and log in',
-        'Go to <strong>Capture</strong> → <strong>Sweep Signal</strong> tab',
-        'Upload the <code>wet_signal.wav</code> you just downloaded',
-        'Train and download the new <strong>Full Rig</strong> model',
+        '⚠️ Tone3000 stopped training Architecture 1 (A1) models — it now only produces A2 models, which the Pocket Master can\'t run. So the Full Rig training needs to happen somewhere else.',
+        'Watch this video tutorial, which shows how to train A1 using Google Colab: <a href="https://www.youtube.com/watch?v=fbxO6XHU8x4" target="_blank" rel="noopener">youtube.com/watch?v=fbxO6XHU8x4</a>',
+        'Also download <code>input.wav</code> (the same sweep signal used to generate your wet signal): <a href="./src/T3K-sweep-v3.wav" download="input.wav">input.wav</a>',
+        'Open the <a href="https://colab.research.google.com/github/sdatkinson/NAMTrainerColab/blob/main/notebook.ipynb" target="_blank" rel="noopener">NAMTrainerColab</a> notebook on Google Colab (Runtime → Change runtime type → GPU)',
+        'Upload both files: <code>input.wav</code> (downloaded above) and the <code>wet_signal.wav</code> generated here, renamed to <code>output.wav</code>',
+        'Run the training and download the resulting <code>model.nam</code> (from the <code>exported_model</code> folder)',
         'Import it into the Pocket Master via SonicLink or Sonicake Manager',
       ],
 
@@ -651,8 +665,9 @@
       'type.unknown':  '❓ Unknown type',
 
       'status.vol.ok': '✅ Download started!',
+      'status.vol.a2detected': '⛔ This file uses NAM Architecture 2 (A2). The Pocket Master and this tool only support Architecture 1 (A1) — processing it here would produce a corrupted .nam. Use an A1 model instead.',
       'status.rig.full_rig':    '⚠️ This model is already a Full Rig. This tool is meant for Amp Heads.',
-      'status.rig.ok':          '✅ Wet signal generated! Upload the file to Tone3000 → Capture → Sweep Signal.',
+      'status.rig.ok':          '✅ Wet signal generated! See the training steps below (Google Colab).',
       'status.ir.missing':      (url) => `IR not found at ${url}. Place porrada.wav and clean.wav in the src/ folder.`,
       'status.sweep.missing':   'Tone3000 sweep not found (src/T3K-sweep-v3.wav). Check that the file is in the src/ folder.',
 
@@ -804,6 +819,7 @@
 
   let volNamJson = null;
   let volFilename = '';
+  let volIsA2 = false;
   let wasmReady = false;
 
   function isVolumeModuleReady() {
@@ -812,7 +828,7 @@
 
   function refreshVolumeButtonState() {
     wasmReady = isVolumeModuleReady();
-    volBtn.disabled = !(wasmReady && volNamJson);
+    volBtn.disabled = !(wasmReady && volNamJson && !volIsA2);
   }
 
   volValue.textContent = `+${parseFloat(volSlider.value).toFixed(1)} dB`;
@@ -839,9 +855,15 @@
       volFilename = file.name;
       volDrop.classList.add('has-file');
       volFileInfo.textContent = `📄 ${file.name} (${(file.size / 1024).toFixed(0)} KB)`;
-      refreshVolumeButtonState();
-      hideStatus(volStatus);
       setTypeBadge(volTypeBadge, detectModelType(volNamJson.metadata, file.name));
+
+      volIsA2 = detectArchitectureGeneration(volNamJson) === 'A2';
+      if (volIsA2) {
+        showStatus(volStatus, t('status.vol.a2detected'), 'error');
+      } else {
+        hideStatus(volStatus);
+      }
+      refreshVolumeButtonState();
     } catch (err) {
       showStatus(volStatus, err.message, 'error');
     }
